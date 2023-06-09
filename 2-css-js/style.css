@@ -1,0 +1,118 @@
+*{
+    box-sizing: border-box;
+}
+
+body{
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+
+header [class*="header"]{
+    background-color: #005e63;
+    position: fixed;
+    top:0;
+    width: 100vw;
+    height: 8vh;
+}
+
+#sosyal_medya{
+    display: flex;
+    align-items: center;
+    height: 100%;
+    float: right;
+}
+
+#sosyal_medya ul{
+    margin:auto;
+    padding: 0;
+}
+
+#sosyal_medya li{
+    display: inline-block;
+    margin: 0 10px;
+    padding: 0;
+}
+
+.clearfix::before{
+    display: block;
+    content: '';
+    clear: both;
+}
+
+.main-header-contents{
+    display: flex;
+    align-items: center;
+    margin: 0 25px;
+}
+
+.main-header-contents div{
+    height: 100%;
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+}
+
+header{
+    display: flex;
+    position: fixed;
+    
+}
+
+.main-karsilama{
+    display: inline-block;
+    width: 100vw;
+    height: 90vh;
+    background-color: #00ADB5;
+}
+
+#mesaj{
+    position: absolute;
+    z-index: 100;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+
+#uparrow{
+    display: inline-block;
+    height: 8vh;
+    margin:0;
+    margin-left: 50%;
+    transform: translate(-50%);
+}
+
+.content{
+    height: 100vh;
+    width: 100vw;
+}
+
+.content-proje{
+    width: 100vw;
+    height: 33%;
+    background-color: black;
+}
+
+.content-film-dizi{
+    width: 100vw;
+    height: 33%;
+    background-color: black;
+}
+
+.content-muzik{
+    width: 100vw;
+    height: 33%;
+    background-color: black;
+}
+
+.main-karsilama a{
+    color: white;
+    margin-right: 20px;
+}
+
+.main-karsilama a:hover{
+    font-size: 125%;
+    transition: font-size 1s;
+    color: wheat;
+    transition: color 0.5s;
+}

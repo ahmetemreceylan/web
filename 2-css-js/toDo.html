@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>toDO</title>
+    <style>
+        *{
+            box-sizing: border-box;
+        }
+
+        body{
+            margin:0;
+        }
+
+        h1{
+            display: inline-block;
+            margin: 0;
+            padding: 0;
+        }
+
+        ul,li{
+            margin: 0;
+            padding: 0;
+            list-style-type: none;
+        }
+        
+        .main-container{
+            width: 60vw;
+            margin:0 auto;
+            background-color: rgba(0, 255, 0, 1);
+
+        }
+
+        .main-container h1{
+            width: calc();
+            text-align: center;
+        }
+
+        .clearfix::after{
+            display: block;
+            content: '';
+            clear: both;
+        }
+
+        #background-color-btn{
+            float:right;
+        }
+
+        .input{
+            display: inline-block;
+        }
+
+        div [type=text]{
+            appearance: none;
+            border:2px black solid;
+            border-radius: 5px;
+            height: 2rem;
+            box-shadow: 0px 0px 5px 0px greenyellow ;
+        }
+
+        div [type=text]:focus{
+            box-shadow: 0px 0px 10px 0px rgba(0, 0, 0, 1) ;
+        }
+
+        .list-container{
+            border: 2px solid black;
+        }
+
+        .list__item{
+            background-color: gray;
+            color: white;
+            text-align: center;
+        }
+
+        #print{
+            float:right;
+        }
+
+        #iptal{
+            display: none;
+        }
+
+        .checked:not(.filter span){
+            text-decoration: line-through;
+        }
+        
+        .filter-input{
+            text-align: center;
+        }
+
+        .filter span{
+            cursor: pointer;
+        }
+
+        div.filter span.active{
+            background-color:white;
+            color:blue;
+        }
+
+        .filter{
+            display: inline-block;
+        }
+
+    </style>
+</head>
+<body translate="no">
+    <div class="main-container">
+        <div class="header">
+            <h1>toDo</h1>
+            <button type="button" id="background-color-btn" class="clearfix">Gece Modu</button>
+            <button type="button" id="print" class="clearfix">Print</button>
+        </div>
+        <div class="filter-input">
+            <div class="filter">
+                <span class="all active">Hepsi</span>
+                <span class="pending">Tamamlanmamış</span>
+                <span class="checked">Tamamlanmış</span>
+            </div>
+            <div class="input">
+                <input type="text">
+                <button type="button" id="iptal">İptal</button>
+                <button type="button" id="ekle">Ekle</button>
+                <button type="button" id="temizle">Temizle</button>
+            </div>
+        </div>
+        
+        <div class="list-container">
+            <ul>
+            </ul>
+            
+        </div>
+    </div>
+
+<script>
+    window.onload = start;
+
+    var nightMod=false;
+    var editMode=false;
+
+    var veriler = [];
+    var guncelleme_id;
+    var guncelleme_content;
+    var active_span = document.querySelector("div.filter .active").classList[0];
+
+    if(localStorage.getItem("local")!=null){
+        veriler= JSON.parse(localStorage.getItem("local"));
+    }
+
+    document.body.addEventListener("click", function(event){
+        document.querySelector("input").focus();
+    });
+    document.body.addEventListener("keypress", function(event){
+        document.querySelector("input").focus();
+    });
+    document.querySelector("input").addEventListener("keyup", guncelleme);
+    document.querySelector("#background-color-btn").addEventListener("click", background);
+    document.querySelector("#ekle").addEventListener("click", f_ekle);
+    document.querySelector("#temizle").addEventListener("click", temizle);
+    document.querySelector("input").addEventListener("keypress", enter);
+
+    document.querySelector("#iptal").addEventListener("click", function(event){
+        document.querySelector(`#id-${guncelleme_id}`).innerText = `${guncelleme_id} - ${guncelleme_content}`;
+        document.querySelector("input").value="";
+        document.querySelector("input").blur();           
+        editMode = false;
+        event.preventDefault();
+        document.getElementById("iptal").style.display="none";
+        console.log("%c editMode kapandı","color:red; background-color:white;")
+    });
+
+    document.querySelector("#print").addEventListener("click",function(event){
+        document.querySelector(".header").style.display="none";
+        document.querySelector(".input").style.display="none";
+        for(var i of document.querySelectorAll("button")){
+            i.style.display="none";
+        }
+        document.body.style.fontSize="2rem";
+        window.print();
+        document.querySelector(".header").style.display="block";
+        document.querySelector(".input").style.display="block";
+        for(var i of document.querySelectorAll("button")){
+            i.style.display="inline";
+        }
+        document.body.style.fontSize="1rem";
+        event.preventDefault();
+        console.log("%c :==> Yazdırma penceresi açıldı","color:red; background-color:white;")
+    });
+    
+    for(let i of document.querySelectorAll(".filter span")){
+        i.addEventListener("click", function(){
+            document.querySelector(".filter .active").classList.remove("active");
+            i.classList.add("active");
+            document.querySelector("ul").innerHTML="";
+            active_span = document.querySelector("div.filter .active").classList[0];
+            console.log("%c:==> Active " + active_span,"color:red;background-color:white");
+            listele(); 
+        });
+    }
+
+    function start(){
+        document.querySelector("input").focus();
+        listele();
+    }
+
+    function guncelleme(event){
+        if(editMode){
+            document.querySelector(`#id-${guncelleme_id}`).innerText = `${guncelleme_id} - ${document.querySelector("input").value}`;
+            localStorage.setItem("local",JSON.stringify(veriler));
+            
+        }
+        if(event.key=="Escape"){
+            document.querySelector(`#id-${guncelleme_id}`).innerText =  `${guncelleme_id} - ${guncelleme_content}`;
+            document.querySelector("input").value="";
+            document.querySelector("input").blur();           
+            editMode = false;
+            document.getElementById("iptal").style.display="none";
+            console.log("%c editMode kapandı","color:red; background-color:white;");
+            localStorage.setItem("local",JSON.stringify(veriler));
+        }
+        
+    }
+
+    function background(event){
+        if(!nightMod){
+            document.body.style.backgroundColor="black";
+            nightMod=true;
+            document.querySelector("#background-color-btn").innerText="Gündüz Modu";
+            console.log("%c:==> gece modu açıldı","color:red; background-color:white;");
+        }
+        else{
+            document.body.style.backgroundColor="white";
+            nightMod=false;
+            document.querySelector("#background-color-btn").innerText="Gece Modu";
+            console.log("%c:==> gece modu kapandı","color:red; background-color:white;");
+        }
+        event.preventDefault();
+    }
+
+    function enter(girdi){
+        var veri=document.querySelector("input").value;
+        if(girdi.key=="Enter"){
+            if(veri==""){
+             alert("Boş girdi verilemez");
+                return;
+            }
+            else{
+                ekle();
+            }
+        }    
+    }
+
+    function f_ekle(event){
+        var veri=document.querySelector("input").value;
+        if(veri==""){
+            document.querySelector("input").focus();
+            return;
+        }
+        ekle();
+    }
+
+    function ekle(event){
+        
+        var veri=document.querySelector("input").value; 
+        
+        if(!editMode){
+            veriler.push({
+                "id":veriler.length+1,
+                "content":veri,
+                "status":"pending",
+            });
+            
+            document.querySelector("ul").innerHTML="";
+            listele();     
+            document.querySelector("input").value="";
+        }
+        else{
+            editMode=false;
+            document.querySelector("input").value="";
+            document.getElementById("iptal").style.display="none";
+            console.log("%c editMode kapandı","color:red; background-color:white;")
+            
+        }
+
+        if(event!=null)
+            event.preventDefault();
+        
+        localStorage.setItem("local",JSON.stringify(veriler));
+        console.log(`%cEklendi:==> ${veriler[veriler.length-1].id} -  ${veriler[veriler.length-1].content}`,"color:red; background-color:white;");
+    }
+
+    function listele(){
+        if(document.getElementsByTagName("ul")[0].getElementsByClassName("list__item").length==0){
+            document.querySelector("ul").innerHTML='<p id="bos">Boş.</p>';
+        }
+        console.log(document.getElementsByTagName("ul")[0].getElementsByClassName("list__item").length);
+        for(var i in veriler){
+            
+            if(active_span==veriler[i].status || active_span=="all"){
+                let x = veriler[i].status=="checked"?"checked":"";
+                var veri_ = `<div class="list__item"><input type="checkbox" ${x} onclick="check(this)"><span class="${veriler[i].status}" id="id-${veriler[i].id}">${Number(i)+1} -  ${veriler[i].content}</span><button type="button" class="sil" onclick="sil(${veriler[i].id})">Sil</button> <button type="button" class="düzenle" onclick='düzenle(${veriler[i].id},"${veriler[i].content}")'>Düzenle</button></div>`
+                document.querySelector("ul").insertAdjacentHTML("afterbegin",veri_);
+            }
+        }
+        console.log("%c:==> " + veriler.length + " öğe listelendi","color:red; background-color:white;");
+    }
+
+    function temizle(event){
+        document.querySelector("input").value="";
+        document.querySelector("ul").innerHTML="";
+        if (event!=null)
+            event.preventDefault();
+        veriler.splice(0,veriler.length);
+        localStorage.setItem("local",JSON.stringify(veriler));
+        listele();
+        console.log("%c:==> Temizlendi","color:red; background-color:white;");
+    }
+
+    function sil(event){
+        for(var i in veriler){
+            if(event==veriler[i].id)
+                veriler.splice(i,1);
+        }
+        document.querySelector("ul").innerHTML="";
+        console.log("%c:==> Temizlendi","color:red; background-color:white;");
+        console.log("%c:==> " + event + ". veri silindi.","color:red; background-color:white;");
+        localStorage.setItem("local",JSON.stringify(veriler));
+        listele();
+        
+    }
+
+    function düzenle(id, content){
+        editMode=true;
+        document.querySelector("input").focus();
+        document.querySelector("input").value = content;
+        guncelleme_id=id;
+        guncelleme_content=content;
+        document.getElementById("iptal").style.display="inline";
+
+        let x = document.querySelector("input").getBoundingClientRect();
+        console.log(x);
+        localStorage.setItem("local",JSON.stringify(veriler));
+        console.log("%c:==> id:" + id + " content:" + content + " düzenleniyor","color:red; background-color:white;");
+    }   
+
+    function check(check){
+        if(check.checked){
+            check.nextElementSibling.classList.remove("pending");
+            check.nextElementSibling.classList.add("checked");
+            
+            for(let i of veriler){
+                if(i.id==check.nextElementSibling.id.slice(3,check.nextElementSibling.length)){
+                    i.status="checked";
+                }
+            }
+        }
+        else{
+            check.nextElementSibling.classList.remove("checked");
+            check.nextElementSibling.classList.add("pending");
+
+            for(let i of veriler){
+                if(i.id==check.nextElementSibling.id.slice(3,check.nextElementSibling.length)){
+                    i.status="pending";
+                }
+            }
+        }
+        document.querySelector("ul").innerHTML="";
+        localStorage.setItem("local",JSON.stringify(veriler));
+        listele();
+        console.log(veriler);
+        
+    }
+</script>
+</body>
+</html>
